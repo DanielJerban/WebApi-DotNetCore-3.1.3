@@ -9,15 +9,15 @@ namespace DanielApi.Models
 {
     public class UserDto : IValidatableObject
     {
-        [Required]
+        [Required (ErrorMessage = "فیلد نام کاربری الزامی می باشد.")]
         [StringLength(100)]
         public string UserName { get; set; }
 
-        [Required]
+        [Required (ErrorMessage = "فیلد رمز عبور الزامی می باشد.")]
         [StringLength(500)]
         public string Password { get; set; }
 
-        [Required]
+        [Required (ErrorMessage = "فیلد نام و نام خانوادگی الزامی می باشد.")]
         [StringLength(100)]
         public string FullName { get; set; }
 
@@ -25,8 +25,14 @@ namespace DanielApi.Models
 
         public GenderType Gender { get; set; }
 
+        /// <summary>
+        /// Business concept validation 
+        /// </summary>
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
+            // yield return => works kind of like chunk 
+            // and if all if conditions are true it will return all three messages 
+
             if (UserName.Equals("test", StringComparison.OrdinalIgnoreCase))
                 yield return new ValidationResult("نام کاربری نمیتواند Test باشد", new[] { nameof(UserName) });
             if (Password.Equals("123456"))

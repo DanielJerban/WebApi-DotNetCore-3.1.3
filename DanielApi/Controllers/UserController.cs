@@ -14,6 +14,7 @@ using WebFramework.Filters;
 namespace DanielApi.Controllers
 {
     [Route("api/[controller]")]
+    [ApiResultFilter]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -25,7 +26,6 @@ namespace DanielApi.Controllers
         }
 
         [HttpGet]
-        [ApiResultFilter]
         public async Task<ActionResult<List<User>>> Get(CancellationToken cancellationToken)
         {
             var users = await _userRepository.TableNoTracking.ToListAsync(cancellationToken);
@@ -44,9 +44,9 @@ namespace DanielApi.Controllers
         [HttpPost]
         public async Task<ApiResult<User>> Create(UserDto userDto, CancellationToken cancellationToken)
         {
-            //var exists = await _userRepository.TableNoTracking.AnyAsync(p => p.UserName == userDto.UserName);
-            //if (exists)
-            //    return BadRequest("نام کاربری تکراری است");
+            var exists = await _userRepository.TableNoTracking.AnyAsync(p => p.UserName == userDto.UserName);
+            if (exists)
+                return BadRequest("نام کاربری تکراری است");
 
             var user = new User
             {

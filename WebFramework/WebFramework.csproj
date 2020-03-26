@@ -9,7 +9,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Autofac.Extensions.DependencyInjection" Version="6.0.0"/>
+		<PackageReference Include="Autofac.Extensions.DependencyInjection" Version="6.0.0" />
 		<PackageReference Include="AutoMapper" Version="9.0.0" />
 		<PackageReference Include="ElmahCore" Version="1.2.5" />
 		<PackageReference Include="ElmahCore.Sql" Version="1.2.5" />

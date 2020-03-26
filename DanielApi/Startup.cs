@@ -1,4 +1,3 @@
-using System;
 using Data.Contracts;
 using Data.Repositories;
 using Microsoft.AspNetCore.Builder;
@@ -8,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using WebFramework.Middlewares;
 
 namespace DanielApi
 {
@@ -39,7 +39,8 @@ namespace DanielApi
             {
                 option.SwaggerDoc("v1.0", new OpenApiInfo()
                 {
-                    Version = "v1.0", Title = "Daniel Api OpenInfo"
+                    Version = "v1.0",
+                    Title = "Daniel Api OpenInfo"
                 });
             });
         }
@@ -47,9 +48,17 @@ namespace DanielApi
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            // Custom exception middleware 
+            app.UseCustomExceptionHandler();
+
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
+                // app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                // app.UseExceptionHandler();
+                app.UseHsts();
             }
 
             app.UseHttpsRedirection();

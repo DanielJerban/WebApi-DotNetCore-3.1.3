@@ -1,7 +1,7 @@
-﻿using Common.Utilities;
+﻿using Common;
+using Common.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
 namespace WebFramework.Api
@@ -113,15 +113,5 @@ namespace WebFramework.Api
             return new ApiResult<TData>(false, ApiResultStatusCode.NotFound, (TData)result.Value);
         }
         #endregion
-    }
-
-    public enum ApiResultStatusCode
-    {
-        [Display(Name = "عملیات با موفقیت انجام شد.")]
-        Success,
-        [Display(Name = "اطلاعات وارد شده صحیح نمی باشد.")]
-        BadRequest,
-        [Display(Name = "اطلاعاتی یافت نشد.")]
-        NotFound
     }
 }

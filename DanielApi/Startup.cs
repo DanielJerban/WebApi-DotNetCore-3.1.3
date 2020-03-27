@@ -1,5 +1,7 @@
 using Data.Contracts;
 using Data.Repositories;
+using ElmahCore.Mvc;
+using ElmahCore.Sql;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -13,12 +15,12 @@ namespace DanielApi
 {
     public class Startup
     {
+        public IConfiguration Configuration { get; }
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
-
-        public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -42,6 +44,13 @@ namespace DanielApi
                     Version = "v1.0",
                     Title = "Daniel Api OpenInfo"
                 });
+            });
+
+            // Elmah Error logger service
+            services.AddElmah<SqlErrorLog>(c =>
+            {
+                c.Path = "/Elmah";
+                c.ConnectionString = Configuration.GetConnectionString("Elmah");
             });
         }
 
@@ -69,6 +78,9 @@ namespace DanielApi
             {
                 option.SwaggerEndpoint("/swagger/v1.0/swagger.json", "Doc-v1");
             });
+
+            // Elmah middleware 
+            app.UseElmah();
 
             app.UseRouting();
 

@@ -12,8 +12,8 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using WebFramework.Api;
-
-namespace WebFramework.Middlewares
+    
+namespace WebFramework.MiddleWares
 {
     public static class CustomExceptionHandlerMiddlewareExtensions
     {

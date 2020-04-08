@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using Common;
 using DanielApi.Models;
 using Data.Contracts;
 using Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Services.Services;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using WebFramework.Api;
 using WebFramework.Filters;
 
@@ -19,15 +20,23 @@ namespace DanielApi.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserRepository _userRepository;
+        private readonly IJwtService _jwtService;
 
-        public UserController(IUserRepository userRepository)
+        public UserController(IUserRepository userRepository, IJwtService jwtService)
         {
             this._userRepository = userRepository;
+            this._jwtService = jwtService;
         }
 
         [HttpGet]
         public async Task<ActionResult<List<User>>> Get(CancellationToken cancellationToken)
         {
+            // Get payload data using claim 
+            //var userName = HttpContext.User.Identity.GetUserName();
+            //var userId = HttpContext.User.Identity.GetUserId();
+            //var phone = HttpContext.User.Identity.FindFirstValue(ClaimTypes.MobilePhone);
+            //var roles = HttpContext.User.Identity.FindFirstValue(ClaimTypes.Role);
+
             var users = await _userRepository.TableNoTracking.ToListAsync(cancellationToken);
             return Ok(users);
         }
@@ -74,6 +83,7 @@ namespace DanielApi.Controllers
         }
 
         [HttpDelete]
+        [Authorize]
         public async Task<ApiResult> Delete(int id, CancellationToken cancellationToken)
         {
             // you use this either for cancellationToken 
@@ -83,6 +93,21 @@ namespace DanielApi.Controllers
             await _userRepository.DeleteAsync(user, cancellationToken);
 
             return Ok();
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public async Task<ApiResult<string>> Login(string userName, string password, CancellationToken cancellationToken)
+        {
+            var user = await _userRepository.GetByUserAndPass(userName, password, cancellationToken);
+            if (user == null)
+            {
+                return new ApiResult<string>(false, ApiResultStatusCode.BadRequest, null, "کاربری با این مشخصات یافت نشد.");
+            }
+
+            var token = _jwtService.Generate(user);
+
+            return new ApiResult<string>(true, ApiResultStatusCode.Success, token);
         }
     }
 }

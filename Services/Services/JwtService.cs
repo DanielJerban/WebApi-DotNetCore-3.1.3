@@ -24,6 +24,9 @@ namespace Services.Services
             var secretKey = Encoding.UTF8.GetBytes(_siteSetting.JwtSettings.SecretKey); // longer that 16 character
             var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKey), SecurityAlgorithms.HmacSha256Signature);
 
+            var encryptionkey = Encoding.UTF8.GetBytes(_siteSetting.JwtSettings.EncryptKey); //must be 16 character
+            var encryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(encryptionkey), SecurityAlgorithms.Aes128KW, SecurityAlgorithms.Aes128CbcHmacSha256);
+
             var claims = _getClaims(user);
 
             var descriptor = new SecurityTokenDescriptor
@@ -34,6 +37,7 @@ namespace Services.Services
                 NotBefore = DateTime.Now.AddMinutes(_siteSetting.JwtSettings.NotBeforeMinutes),
                 Expires = DateTime.Now.AddMinutes(_siteSetting.JwtSettings.ExpirationMinutes),
                 SigningCredentials = signingCredentials,
+                EncryptingCredentials = encryptingCredentials,
                 Subject = new ClaimsIdentity(claims)
             };
 
@@ -60,8 +64,7 @@ namespace Services.Services
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.MobilePhone, "09123456987"),
-                // TODO: uncomment later 
-                //new Claim(securityStampClaimType, user.SecurityStamp.ToString())
+                new Claim(securityStampClaimType, user.SecurityStamp.ToString())
             };
 
             var roles = new Role[] { new Role { Name = "Admin" } };

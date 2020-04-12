@@ -1,10 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Net;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
-using Common;
+﻿using Common;
 using Common.Exceptions;
 using Common.Utilities;
 using Data.Contracts;
@@ -15,21 +9,27 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Linq;
+using System.Net;
+using System.Security.Claims;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace WebFramework.Configuration
 {
     public static class ServiceCollectionExtensions
     {
-        public static void AddElmahConfiguration(this IServiceCollection services,IConfiguration configuration, ElmahSettings elmahSettings)
+        public static void AddElmahConfiguration(this IServiceCollection services, IConfiguration configuration, ElmahSettings elmahSettings)
         {
             services.AddElmah<SqlErrorLog>(c =>
                 {
                     c.Path = elmahSettings.Path;
                     c.ConnectionString = configuration.GetConnectionString(elmahSettings.ConnectionStringName);
 
-                // check if the user authorized to see this page 
-                //c.CheckPermissionAction = httpContext => httpContext.User.Identity.IsAuthenticated;
-            });
+                    // check if the user authorized to see this page 
+                    //c.CheckPermissionAction = httpContext => httpContext.User.Identity.IsAuthenticated;
+                });
         }
 
         public static void AddJwtAuthentication(this IServiceCollection services, JwtSettings jwtSettings)
@@ -41,7 +41,8 @@ namespace WebFramework.Configuration
                 options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
             }).AddJwtBearer(options =>
             {
-                var secretKey = Encoding.UTF8.GetBytes(jwtSettings.SecretKey);
+                var secretkey = Encoding.UTF8.GetBytes(jwtSettings.SecretKey);
+                var encryptionkey = Encoding.UTF8.GetBytes(jwtSettings.EncryptKey);
 
                 var validationParameters = new TokenValidationParameters
                 {
@@ -49,7 +50,7 @@ namespace WebFramework.Configuration
                     RequireSignedTokens = true,
 
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(secretKey),
+                    IssuerSigningKey = new SymmetricSecurityKey(secretkey),
 
                     RequireExpirationTime = true,
                     ValidateLifetime = true,
@@ -58,7 +59,9 @@ namespace WebFramework.Configuration
                     ValidAudience = jwtSettings.Audience,
 
                     ValidateIssuer = true, //default : false
-                    ValidIssuer = jwtSettings.Issuer
+                    ValidIssuer = jwtSettings.Issuer,
+
+                    TokenDecryptionKey = new SymmetricSecurityKey(encryptionkey)
                 };
 
                 options.RequireHttpsMetadata = false;
@@ -93,9 +96,8 @@ namespace WebFramework.Configuration
                         var userId = claimsIdentity.GetUserId<int>();
                         var user = await userRepository.GetByIdAsync(context.HttpContext.RequestAborted, userId);
 
-                        // TODO: uncomment later 
-                        //if (user.SecurityStamp != Guid.Parse(securityStamp))
-                        //    context.Fail("Token secuirty stamp is not valid.");
+                        if (user.SecurityStamp != Guid.Parse(securityStamp))
+                            context.Fail("Token secuirty stamp is not valid.");
 
                         //var validatedUser = await applicationSignInManager.ValidateSecurityStampAsync(context.Principal);
                         //if (validatedUser == null)
@@ -104,8 +106,7 @@ namespace WebFramework.Configuration
                         if (!user.IsActive)
                             context.Fail("User is not active.");
 
-                        // TODO: uncomment later 
-                        //await userRepository.UpdateLastLoginDateAsync(user, context.HttpContext.RequestAborted);
+                        await userRepository.UpdateLastLoginDateAsync(user, context.HttpContext.RequestAborted);
                     },
                     OnChallenge = context =>
                     {

@@ -1,4 +1,5 @@
-﻿using Common.Exceptions;
+﻿using System;
+using Common.Exceptions;
 using Common.Utilities;
 using Data.Contracts;
 using Entities;
@@ -20,6 +21,24 @@ namespace Data.Repositories
         {
             var passwordHash = SecurityHelper.GetSha256Hash(password);
             return Table.Where(p => p.UserName == username && p.PasswordHash == passwordHash).SingleOrDefaultAsync(cancellationToken);
+        }
+
+        public Task UpdateSecurityStampAsync(User user, CancellationToken cancellationToken)
+        {
+            user.SecurityStamp = Guid.NewGuid();
+            return UpdateAsync(user, cancellationToken);
+        }
+
+        //public override void Update(User entity, bool saveNow = true)
+        //{
+        //    entity.SecurityStamp = Guid.NewGuid();
+        //    base.Update(entity, saveNow);
+        //}
+
+        public Task UpdateLastLoginDateAsync(User user, CancellationToken cancellationToken)
+        {
+            user.LastLoginDate = DateTimeOffset.Now;
+            return UpdateAsync(user, cancellationToken);
         }
 
         public async Task AddAsync(User user, string password, CancellationToken cancellationToken)

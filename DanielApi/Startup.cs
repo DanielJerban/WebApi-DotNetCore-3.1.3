@@ -53,11 +53,11 @@ namespace DanielApi
                 });
             });
 
-            // Elmah Error logger service
-            services.AddElmahConfiguration(Configuration, _siteSetting.ElmahSettings);
-
             // Jwt Authentication 
             services.AddJwtAuthentication(_siteSetting.JwtSettings);
+
+            // Elmah Error logger service
+            services.AddElmahConfiguration(Configuration, _siteSetting.ElmahSettings);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -87,14 +87,14 @@ namespace DanielApi
 
             app.UseRouting();
 
+            app.UseAuthentication();
+
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
-
-            app.UseAuthentication();
 
             app.UseElmah();
         }

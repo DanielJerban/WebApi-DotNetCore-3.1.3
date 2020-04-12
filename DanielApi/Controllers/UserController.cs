@@ -29,6 +29,7 @@ namespace DanielApi.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<List<User>>> Get(CancellationToken cancellationToken)
         {
             // Get payload data using claim 
@@ -47,6 +48,7 @@ namespace DanielApi.Controllers
             var user = await _userRepository.GetByIdAsync(cancellationToken, id);
             if (user == null)
                 return NotFound();
+            await _userRepository.UpdateSecurityStampAsync(user, cancellationToken);
             return user;
         }
 
